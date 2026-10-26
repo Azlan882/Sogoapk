@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile in SogoSocial",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "followersCount": { "type": "number" },
+        "followingCount": { "type": "number" },
+        "isVerified": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username"]
+    },
+    "BlockedUser": {
+      "title": "BlockedUser",
+      "description": "Blocked user record under a user document",
+      "type": "object",
+      "properties": {
+        "blockedUserId": { "type": "string" },
+        "blockedUsername": { "type": "string" },
+        "blockedDisplayName": { "type": "string" },
+        "blockedAvatarUrl": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["blockedUserId", "createdAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Moderation report against a post, video/reel, or user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "targetType": { "type": "string", "enum": ["post", "video", "user"] },
+        "targetId": { "type": "string" },
+        "targetAuthorId": { "type": "string" },
+        "targetAuthorUsername": { "type": "string" },
+        "targetTitleOrCaption": { "type": "string" },
+        "reason": { "type": "string" },
+        "details": { "type": "string" },
+        "reporterId": { "type": "string" },
+        "reporterUsername": { "type": "string" },
+        "reporterEmail": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "resolved", "dismissed"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "targetType", "targetId", "reason", "reporterId", "status", "createdAt"]
+    },
+    "AccountDeletionRequest": {
+      "title": "AccountDeletionRequest",
+      "description": "Public external request for account deletion",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "username": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processed", "rejected"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document"
+    },
+    "/users/{userId}/blocked/{blockedUserId}": {
+      "schema": "BlockedUser",
+      "description": "Subcollection of users blocked by this user"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Moderation reports submitted by users"
+    },
+    "/account_deletion_requests/{requestId}": {
+      "schema": "AccountDeletionRequest",
+      "description": "External deletion requests submitted by users via web portal"
+    }
+  }
+}

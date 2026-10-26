@@ -1,0 +1,61 @@
+workflows:
+  android-workflow:
+    name: Build Android Debug APK
+    max_build_duration: 60
+    instance_type: linux
+    environment:
+      node: 22
+      java: 21
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: '*'
+          include: true
+          source: true
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Build web application
+        script: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          fi
+          npm run build
+        environment:
+          VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY:-${FIREBASE_API_KEY:-AIzaSyA7XXZaXGrs6g4La5lkd3Vil8AJSUXTlek}}
+          VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN:-sogo-e5ea9.firebaseapp.com}
+          VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID:-sogo-e5ea9}
+          VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET:-sogo-e5ea9.firebasestorage.app}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID:-1035132864845}
+          VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID:-1:1035132864845:web:6508bc026762f4887f8f04}
+          VITE_FIREBASE_MEASUREMENT_ID: ${VITE_FIREBASE_MEASUREMENT_ID:-G-7FCKN828JC}
+          VITE_PUBLIC_APP_URL: ${VITE_PUBLIC_APP_URL:-https://sogo-e5ea9.web.app}
+      - name: Sync Capacitor Android
+        script: |
+          npx cap sync android
+      - name: Set up Android SDK licenses and components
+        script: |
+          SDK_DIR="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          if [ -n "$SDK_DIR" ]; then
+            mkdir -p "$SDK_DIR/licenses" || true
+            echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$SDK_DIR/licenses/android-sdk-license"
+            echo "84831b9409646a578e440d4532a7ff0482524587" >> "$SDK_DIR/licenses/android-sdk-license"
+            echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> "$SDK_DIR/licenses/android-sdk-license"
+            echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$SDK_DIR/licenses/android-sdk-preview-license"
+          fi
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+      - name: Build Android project
+        script: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug --stacktrace --no-daemon
+    artifacts:
+      - android/app/build/outputs/apk/debug/app-debug.apk

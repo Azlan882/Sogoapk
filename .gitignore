@@ -1,0 +1,13 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+*.apk
+*.aab
+sogo-upload-key.jks
+*.jks
+*.keystore
+.env*
+!.env.example

@@ -1,0 +1,685 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return request.auth != null
+        && (request.auth.token.admin == true || request.auth.token.role == 'admin')
+        && request.auth.token.email == 'azlanmalik774@gmail.com';
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Any user can view user profiles across the feed, discovery, and profile views
+      allow read: if true;
+
+      // Authenticated user can create their own profile document, but cannot self-assign verification or admin privileges
+      allow create: if isAdmin() || (
+        isAuthenticated()
+        && request.auth.uid == userId
+        && (!('isVerified' in request.resource.data) || request.resource.data.isVerified == false)
+        && (!('verifiedAt' in request.resource.data) || request.resource.data.verifiedAt == null)
+        && (!('verifiedBy' in request.resource.data) || request.resource.data.verifiedBy == null)
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        && !('role' in request.resource.data)
+      );
+
+      // Authenticated user can update their own profile document, BUT normal users cannot modify verification, moderation fields, or tamper with follower counts.
+      // Admin can update any user document (e.g. verification, suspension, disabled, moderation status).
+      // Other authenticated users may update ONLY the followersCount counter via strictly +/-1 increments (e.g. follow/unfollow).
+      allow update: if (
+        isAdmin() ||
+        (isAuthenticated() && request.auth.uid == userId && (
+          resource == null ||
+          (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+              'isSuspended', 'isDisabled', 'moderationStatus', 'role', 'isAdmin',
+              'isVerified', 'verifiedAt', 'verifiedBy'
+            ]) &&
+            (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['followersCount']) || request.resource.data.followersCount == resource.data.followersCount)
+          )
+        )) ||
+        (
+          isAuthenticated() &&
+          resource != null &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followersCount']) &&
+          request.resource.data.followersCount is int &&
+          request.resource.data.followersCount >= 0 &&
+          (request.resource.data.followersCount - resource.data.followersCount == 1 || request.resource.data.followersCount - resource.data.followersCount == -1)
+        )
+      );
+
+      allow delete: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
+
+      // Following subcollection: /users/{userId}/following/{targetUserId}
+      match /following/{targetUserId} {
+        allow read: if true;
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // Followers subcollection: /users/{userId}/followers/{followerUserId}
+      match /followers/{followerUserId} {
+        allow read: if true;
+        allow write: if isOwner(userId) || isOwner(followerUserId) || isAdmin();
+      }
+
+      // Blocked subcollection: /users/{userId}/blocked/{blockedUserId}
+      match /blocked/{blockedUserId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Existing Posts Collection (includes reference-based Sogo reposts)
+    match /posts/{postId} {
+      allow read: if true;
+
+      // Create:
+      // 1. Normal post: userId must match request.auth.uid, and isRepost must not be true.
+      // 2. Repost reference: userId, sharedByUid, and repostedBy.id must match request.auth.uid,
+      //    must NOT duplicate media fields (imageUrl/videoUrl), must have deterministic ID,
+      //    and must reference a valid original post or video with matching originalAuthorId.
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && (
+          (
+            (!('isRepost' in request.resource.data) || request.resource.data.isRepost == false)
+          ) ||
+          (
+            request.resource.data.isRepost == true
+            && !('imageUrl' in request.resource.data)
+            && !('videoUrl' in request.resource.data)
+            && (!('sharedByUid' in request.resource.data) || request.resource.data.sharedByUid == request.auth.uid)
+            && (!('repostId' in request.resource.data) || request.resource.data.repostId == postId)
+            && request.resource.data.repostedBy is map
+            && request.resource.data.repostedBy.id == request.auth.uid
+            && request.resource.data.originalAuthorId is string
+            && request.resource.data.originalAuthorId.size() > 0
+            && (
+              (
+                request.resource.data.repostType == 'post'
+                && request.resource.data.originalPostId is string
+                && request.resource.data.originalPostId.size() > 0
+                && request.resource.data.originalPostId.size() <= 128
+                && !request.resource.data.originalPostId.matches('^repost_.*')
+                && (!('originalVideoId' in request.resource.data) || request.resource.data.originalVideoId == null)
+                && postId == 'repost_post_' + request.resource.data.originalPostId + '_' + request.auth.uid
+                && (
+                  !exists(/databases/$(database)/documents/posts/$(request.resource.data.originalPostId)) ||
+                  (
+                    get(/databases/$(database)/documents/posts/$(request.resource.data.originalPostId)).data.userId == request.resource.data.originalAuthorId
+                    && (!('isRepost' in get(/databases/$(database)/documents/posts/$(request.resource.data.originalPostId)).data) || get(/databases/$(database)/documents/posts/$(request.resource.data.originalPostId)).data.isRepost == false)
+                  )
+                )
+              ) ||
+              (
+                request.resource.data.repostType == 'video'
+                && request.resource.data.originalVideoId is string
+                && request.resource.data.originalVideoId.size() > 0
+                && request.resource.data.originalVideoId.size() <= 128
+                && !request.resource.data.originalVideoId.matches('^repost_.*')
+                && (!('originalPostId' in request.resource.data) || request.resource.data.originalPostId == null)
+                && postId == 'repost_video_' + request.resource.data.originalVideoId + '_' + request.auth.uid
+                && exists(/databases/$(database)/documents/videos/$(request.resource.data.originalVideoId))
+                && get(/databases/$(database)/documents/videos/$(request.resource.data.originalVideoId)).data.userId == request.resource.data.originalAuthorId
+              )
+            )
+          )
+        );
+
+      // Update:
+      // - Repost documents cannot have their originalPostId, originalVideoId, originalAuthorId, userId, sharedByUid, or repostType altered after creation.
+      //   Idempotent setDoc by the repost owner is permitted only when all reference and author fields remain strictly identical and no media is copied.
+      // - Normal post owners can update their own post caption/tags/location, but cannot change userId or convert a post into a repost.
+      // - Authenticated users can update viewsCount or repostsCount (+/-1) on normal posts.
+      allow update: if (
+        isAdmin() ||
+        (
+          isAuthenticated()
+          && resource != null
+          && resource.data.isRepost == true
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.isRepost == true
+          && !('imageUrl' in request.resource.data)
+          && !('videoUrl' in request.resource.data)
+          && (!('sharedByUid' in request.resource.data) || request.resource.data.sharedByUid == request.auth.uid)
+          && request.resource.data.repostType == resource.data.repostType
+          && request.resource.data.originalPostId == resource.data.originalPostId
+          && request.resource.data.originalVideoId == resource.data.originalVideoId
+          && request.resource.data.originalAuthorId == resource.data.originalAuthorId
+          && request.resource.data.repostedBy is map
+          && request.resource.data.repostedBy.id == request.auth.uid
+        ) ||
+        (
+          isAuthenticated()
+          && resource != null
+          && (!('isRepost' in resource.data) || resource.data.isRepost == false)
+          && (
+            (
+              resource.data.userId == request.auth.uid
+              && request.resource.data.userId == resource.data.userId
+              && (!('isRepost' in request.resource.data) || request.resource.data.isRepost == false)
+              && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+                'userId', 'sharedByUid', 'isRepost', 'repostType', 'originalPostId', 'originalVideoId', 'originalAuthorId', 'repostedBy'
+              ])
+            ) ||
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewsCount'])
+            ) ||
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['repostsCount'])
+              && request.resource.data.repostsCount is int
+              && request.resource.data.repostsCount >= 0
+              && (
+                request.resource.data.repostsCount - (('repostsCount' in resource.data && resource.data.repostsCount is int) ? resource.data.repostsCount : 0) == 1 ||
+                request.resource.data.repostsCount - (('repostsCount' in resource.data && resource.data.repostsCount is int) ? resource.data.repostsCount : 0) == -1
+              )
+            )
+          )
+        )
+      );
+
+      allow delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // Post Comments Subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) || isAdmin();
+        allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      }
+    }
+
+    // Videos Collection (TikTok / Reels style)
+    match /videos/{videoId} {
+      // Any user can read videos in the feed
+      allow read: if true;
+
+      // Only authenticated users can publish their own video documents
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+      // Owner can modify their video (metadata/caption only; cannot alter ownership, video URL, moderation, or reward fields).
+      // Other authenticated users can ONLY update interaction counters (viewsCount conservative increment, likesCount toggle, commentsCount increment, repostsCount toggle).
+      // Admin has full moderation rights.
+      allow update: if (
+        isAdmin() ||
+        (
+          isAuthenticated() &&
+          resource != null &&
+          resource.data.userId == request.auth.uid &&
+          request.resource.data.userId == resource.data.userId &&
+          request.resource.data.videoUrl == resource.data.videoUrl &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'moderationStatus', 'isSuspended', 'isFlagged', 'hasAdminTestData',
+            'testViewsCount', 'testLikesCount', 'testCommentsCount', 'lastAdminTestAt'
+          ])
+        ) ||
+        (
+          isAuthenticated() &&
+          resource != null &&
+          (
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewsCount'])
+              && request.resource.data.viewsCount is number
+              && request.resource.data.viewsCount - (('viewsCount' in resource.data && resource.data.viewsCount is number) ? resource.data.viewsCount : 0) == 1) ||
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount'])
+              && request.resource.data.likesCount is number
+              && (
+                request.resource.data.likesCount - (('likesCount' in resource.data && resource.data.likesCount is number) ? resource.data.likesCount : 0) == 1 ||
+                request.resource.data.likesCount - (('likesCount' in resource.data && resource.data.likesCount is number) ? resource.data.likesCount : 0) == -1
+              )) ||
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentsCount'])
+              && request.resource.data.commentsCount is number
+              && request.resource.data.commentsCount - (('commentsCount' in resource.data && resource.data.commentsCount is number) ? resource.data.commentsCount : 0) == 1) ||
+            (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['repostsCount'])
+              && request.resource.data.repostsCount is number
+              && request.resource.data.repostsCount >= 0
+              && (
+                request.resource.data.repostsCount - (('repostsCount' in resource.data && resource.data.repostsCount is number) ? resource.data.repostsCount : 0) == 1 ||
+                request.resource.data.repostsCount - (('repostsCount' in resource.data && resource.data.repostsCount is number) ? resource.data.repostsCount : 0) == -1
+              ))
+          )
+        )
+      );
+
+      allow delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // Video Likes Subcollection
+      match /likes/{userId} {
+        allow read: if true;
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // Video Comments Subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid) || isAdmin();
+        allow update, delete: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      }
+    }
+
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      // Recipient can read their own notifications
+      allow read: if isAuthenticated() && (
+        resource.data.recipientUserId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // An authenticated user can create a notification ONLY IF:
+      // 1. actorUserId matches their auth UID and recipientUserId is someone else (social interactions), OR
+      // 2. type is 'sogo_stars' daily engagement notification for their own account
+      // 3. read is false initially
+      allow create: if isAuthenticated()
+        && (
+          (
+            (request.resource.data.actorUserId == request.auth.uid || request.resource.data.actorId == request.auth.uid)
+            && (
+              (request.resource.data.recipientUserId != request.auth.uid && request.resource.data.recipientUserId is string) ||
+              (request.resource.data.recipientId != request.auth.uid && request.resource.data.recipientId is string)
+            )
+          ) || (
+            request.resource.data.type == 'sogo_stars'
+            && (request.resource.data.recipientUserId == request.auth.uid || request.resource.data.recipientId == request.auth.uid)
+          )
+        )
+        && request.resource.data.read == false;
+
+      // Only the recipient can update their notification (e.g. mark as read)
+      allow update: if isAuthenticated() && (
+        resource.data.recipientUserId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Only the recipient, author, or admin can delete notifications
+      allow delete: if isAuthenticated() && (
+        resource.data.recipientUserId == request.auth.uid ||
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Admin Audit Logs Collection (strictly admin-only, append-only)
+    match /adminAuditLogs/{logId} {
+      allow read: if isAdmin();
+
+      allow create: if isAdmin()
+        && request.resource.data.adminUid == request.auth.uid
+        && request.resource.data.adminEmail == 'azlanmalik774@gmail.com';
+
+      allow update, delete: if false;
+    }
+
+    // Reports / Content Moderation Collection
+    match /reports/{reportId} {
+      // Authenticated users can submit a report against violating users/videos/posts
+      allow create: if isAuthenticated() && request.resource.data.reporterId == request.auth.uid;
+      // Only admin can read all reports, update status (resolved/dismissed), or delete
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Public account deletion requests (Google Play policy compliance)
+    match /account_deletion_requests/{requestId} {
+      allow create: if request.resource.data.email is string
+        && request.resource.data.email.size() > 3
+        && request.resource.data.status == 'pending';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Sogo Stars Daily Mission Progress (Hard 500 Stars / $0.50 daily cap)
+    match /sogo_stars_daily/{dailyId} {
+      allow read: if isAdmin()
+        || (
+          isAuthenticated()
+          && (
+            resource == null
+            || resource.data.userId == request.auth.uid
+            || dailyId.matches('^' + request.auth.uid + '_.*')
+          )
+        );
+
+      allow create, update: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.dateKey is string
+        && dailyId == request.auth.uid + '_' + request.resource.data.dateKey
+        && request.resource.data.starsEarnedToday is number
+        && request.resource.data.starsEarnedToday >= 0
+        && request.resource.data.starsEarnedToday <= 500
+        && request.resource.data.centsEarnedToday is number
+        && request.resource.data.centsEarnedToday >= 0
+        && request.resource.data.centsEarnedToday <= 50
+        && request.resource.data.maxDailyStars == 500
+        && request.resource.data.completedMissionsCount is number
+        && request.resource.data.completedMissionsCount >= 0
+        && request.resource.data.completedMissionsCount <= 8;
+
+      allow delete: if false;
+    }
+
+    // Creator Rewards Summaries
+    match /creator_rewards/{userId} {
+
+      allow read: if isAdmin()
+        || (request.auth != null && userId == request.auth.uid);
+
+      allow create: if (
+          isAuthenticated()
+          && userId == request.auth.uid
+          && request.resource.data.userId == userId
+          && request.resource.data.currency == 'USD'
+          && request.resource.data.availableBalanceCents is number
+          && request.resource.data.availableBalanceCents >= 0
+          && request.resource.data.availableBalanceCents <= 50
+          && request.resource.data.totalEarnedCents == request.resource.data.availableBalanceCents
+          && request.resource.data.sogoStarsRewardsCents == request.resource.data.availableBalanceCents
+          && request.resource.data.sogoStarsToday is number
+          && request.resource.data.sogoStarsToday >= 0
+          && request.resource.data.sogoStarsToday <= 500
+        ) || (
+          isAdmin()
+          && request.resource.data.userId == userId
+          && request.resource.data.currency == 'USD'
+          && request.resource.data.hasAdminTestData == true
+          && (
+            // Case 1: grantTestReward
+            (
+              request.resource.data.availableBalanceCents is int
+              && request.resource.data.availableBalanceCents > 0
+              && request.resource.data.availableBalanceCents <= 1000000
+              && request.resource.data.totalEarnedCents == request.resource.data.availableBalanceCents
+              && request.resource.data.testRewardsGrantedCents == request.resource.data.availableBalanceCents
+            ) ||
+            // Case 2: addTestVideoMetrics
+            (
+              request.resource.data.testViewsCount is int
+              && request.resource.data.testQualifiedViewsCount is int
+              && request.resource.data.testVideoRewardsCents is int
+              && request.resource.data.testViewsCount >= 0
+              && request.resource.data.testQualifiedViewsCount >= 0
+              && request.resource.data.testVideoRewardsCents >= 0
+              && request.resource.data.testQualifiedViewsCount <= request.resource.data.testViewsCount
+              && (
+                request.resource.data.testVideoRewardsCents == int(request.resource.data.testQualifiedViewsCount * 50 / 1000)
+                || request.resource.data.testVideoRewardsCents == int(request.resource.data.testQualifiedViewsCount / 1000.0 * 50)
+              )
+            )
+          )
+        );
+
+      allow update: if (
+          // Owner Sogo Stars mission completion credit (+5 cents / 50 Stars or +20 cents / 200 Stars, capped at 500 Stars/day)
+          isAuthenticated()
+          && userId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'userId',
+            'currency',
+            'availableBalanceCents',
+            'totalEarnedCents',
+            'sogoStarsRewardsCents',
+            'sogoStarsTotal',
+            'sogoStarsToday',
+            'sogoStarsDateKey',
+            'updatedAt'
+          ])
+          && request.resource.data.availableBalanceCents is number
+          && request.resource.data.totalEarnedCents is number
+          && (request.resource.data.availableBalanceCents - (('availableBalanceCents' in resource.data && resource.data.availableBalanceCents is number) ? resource.data.availableBalanceCents : 0)) >= 0
+          && (request.resource.data.availableBalanceCents - (('availableBalanceCents' in resource.data && resource.data.availableBalanceCents is number) ? resource.data.availableBalanceCents : 0)) <= 50
+          && (request.resource.data.totalEarnedCents - (('totalEarnedCents' in resource.data && resource.data.totalEarnedCents is number) ? resource.data.totalEarnedCents : 0))
+             == (request.resource.data.availableBalanceCents - (('availableBalanceCents' in resource.data && resource.data.availableBalanceCents is number) ? resource.data.availableBalanceCents : 0))
+          && request.resource.data.sogoStarsToday is number
+          && request.resource.data.sogoStarsToday >= 0
+          && request.resource.data.sogoStarsToday <= 500
+        ) || (
+          isAdmin()
+          && (
+            // Case 1: grantTestReward
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'availableBalanceCents',
+                'totalEarnedCents',
+                'testRewardsGrantedCents',
+                'hasAdminTestData',
+                'updatedAt'
+              ])
+              && request.resource.data.availableBalanceCents - resource.data.availableBalanceCents is int
+              && request.resource.data.availableBalanceCents - resource.data.availableBalanceCents > 0
+              && request.resource.data.availableBalanceCents - resource.data.availableBalanceCents <= 1000000
+              && request.resource.data.totalEarnedCents - resource.data.totalEarnedCents
+                 == request.resource.data.availableBalanceCents - resource.data.availableBalanceCents
+              && request.resource.data.testRewardsGrantedCents -
+                 (('testRewardsGrantedCents' in resource.data)
+                   ? resource.data.testRewardsGrantedCents
+                   : 0)
+                 == request.resource.data.availableBalanceCents - resource.data.availableBalanceCents
+              && request.resource.data.hasAdminTestData == true
+            ) ||
+            // Case 2: addTestVideoMetrics
+            (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'testViewsCount',
+                'testQualifiedViewsCount',
+                'testVideoRewardsCents',
+                'hasAdminTestData',
+                'updatedAt'
+              ])
+              && request.resource.data.testViewsCount is int
+              && request.resource.data.testQualifiedViewsCount is int
+              && request.resource.data.testVideoRewardsCents is int
+              && request.resource.data.testViewsCount >= 0
+              && request.resource.data.testQualifiedViewsCount >= 0
+              && request.resource.data.testVideoRewardsCents >= 0
+              && request.resource.data.testQualifiedViewsCount <= request.resource.data.testViewsCount
+              && (
+                request.resource.data.testVideoRewardsCents == int(request.resource.data.testQualifiedViewsCount * 50 / 1000)
+                || request.resource.data.testVideoRewardsCents == int(request.resource.data.testQualifiedViewsCount / 1000.0 * 50)
+              )
+              && request.resource.data.hasAdminTestData == true
+            )
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    // Creator Reward Ledger
+    match /reward_ledger/{ledgerId} {
+
+      // IMPORTANT:
+      // Check isAdmin() FIRST so nonexistent documents cannot cause
+      // resource.data evaluation errors.
+      allow read: if isAdmin()
+        || (
+          request.auth != null
+          && (
+            resource == null
+            || resource.data.userId == request.auth.uid
+          )
+        );
+
+      allow create: if (
+          isAuthenticated()
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.type == 'sogo_stars_reward'
+          && request.resource.data.transactionType == 'SOGO_STARS_MISSION_REWARD'
+          && request.resource.data.isAdminTestData == false
+          && request.resource.data.starsEarned in [50, 100, 200]
+          && request.resource.data.amountCents in [5, 10, 20]
+          && request.resource.data.currency == 'USD'
+          && request.resource.data.status == 'completed'
+          && request.resource.data.missionId in [
+            'watch_ad',
+            'post_reels',
+            'like_reels',
+            'comment_reels',
+            'watch_reels',
+            'follow_creators',
+            'create_posts',
+            'comment_posts'
+          ]
+          && ledgerId == 'txn_stars_' + request.auth.uid + '_' + request.resource.data.dateKey + '_' + request.resource.data.missionId
+        ) || (
+          isAdmin()
+          && request.resource.data.transactionType == 'admin_test_reward'
+          && request.resource.data.type == 'admin_test_reward'
+          && request.resource.data.isAdminTestData == true
+          && request.resource.data.amountCents is int
+          && request.resource.data.amountCents >= 0
+          && request.resource.data.amountCents <= 1000000
+          && request.resource.data.currency == 'USD'
+          && request.resource.data.adminUid == request.auth.uid
+          && request.resource.data.adminEmail == 'azlanmalik774@gmail.com'
+          && request.resource.data.status == 'completed'
+          && (
+            request.resource.data.id == ledgerId
+            || request.resource.data.operationId == ledgerId
+            || request.resource.data.eventId == ledgerId
+          )
+          && request.resource.data.userId is string
+        );
+
+      allow update, delete: if false;
+    }
+
+    // Helper to validate server-side payout eligibility in Firestore rules:
+    // Both $50.00 USD (5000 cents) minimum available balance AND 10 successful referrals must be met.
+    function isValidCreatorPayoutRequest() {
+      return isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amountCents is int
+        && request.resource.data.amountCents >= 5000
+        && request.resource.data.successfulReferralsCount is int
+        && request.resource.data.successfulReferralsCount >= 10
+        && exists(/databases/$(database)/documents/creator_rewards/$(request.auth.uid))
+        && (
+          (
+            ('availableBalanceCents' in get(/databases/$(database)/documents/creator_rewards/$(request.auth.uid)).data)
+              ? get(/databases/$(database)/documents/creator_rewards/$(request.auth.uid)).data.availableBalanceCents
+              : 0
+          ) + (request.resource.data.successfulReferralsCount * 50) >= 5000
+        )
+        && (
+          (
+            ('availableBalanceCents' in get(/databases/$(database)/documents/creator_rewards/$(request.auth.uid)).data)
+              ? get(/databases/$(database)/documents/creator_rewards/$(request.auth.uid)).data.availableBalanceCents
+              : 0
+          ) + (request.resource.data.successfulReferralsCount * 50) >= request.resource.data.amountCents
+        );
+    }
+
+    // Payout Requests Collection
+    match /payout_requests/{payoutId} {
+      // User can read their own payout requests; admin can read all
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      // User can submit a new payout request with 'pending' status only when BOTH eligibility requirements are met:
+      // 1. Minimum available reward balance >= $50.00 USD (5000 cents)
+      // 2. Minimum successful referrals >= 10
+      allow create: if isValidCreatorPayoutRequest();
+      // ONLY admin can approve, reject, mark as paid, or cancel payouts
+      allow update, delete: if isAdmin();
+    }
+
+    // Alias for Payouts Collection
+    match /payouts/{payoutId} {
+      // User can read their own payout requests; admin can read all
+      allow read: if (isAuthenticated() && resource.data.userId == request.auth.uid) || isAdmin();
+      // User can submit a new payout request with 'pending' status only when BOTH eligibility requirements are met:
+      // 1. Minimum available reward balance >= $50.00 USD (5000 cents)
+      // 2. Minimum successful referrals >= 10
+      allow create: if isValidCreatorPayoutRequest();
+      // ONLY admin can approve, reject, mark as paid, or cancel payouts
+      allow update, delete: if isAdmin();
+    }
+
+    // Referrals Collection (Anti-fraud hardened)
+    match /referrals/{referralId} {
+      // Referrer or referred user can view their record; admin can view all.
+      // Check isAdmin() and referralId == request.auth.uid FIRST and guard resource != null
+      // so getDoc on a non-existent /referrals/{uid} document does not fail rule evaluation.
+      allow read: if isAdmin() || (
+        isAuthenticated() && (
+          referralId == request.auth.uid ||
+          (resource != null && (
+            resource.data.referrerId == request.auth.uid ||
+            resource.data.referredUserId == request.auth.uid
+          ))
+        )
+      );
+
+      // Only the authenticated referred user can register their OWN referral attribution:
+      // - The document ID (referralId) MUST match their own auth.uid
+      // - referredUserId MUST match their own auth.uid
+      // - referrerId must be provided, non-empty string, CANNOT be themselves, and must exist in /users
+      // - status MUST start as 'pending'
+      // - rewardGranted MUST start as false
+      // - rewardAmountCents must be 10 ($0.10) for new referrals (or 50 for legacy records)
+      allow create: if isAuthenticated()
+        && referralId == request.auth.uid
+        && request.resource.data.referredUserId == request.auth.uid
+        && request.resource.data.id == request.auth.uid
+        && request.resource.data.referrerId is string
+        && request.resource.data.referrerId.size() > 0
+        && request.resource.data.referrerId != request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.rewardGranted == false
+        && (request.resource.data.rewardAmountCents == 10 || request.resource.data.rewardAmountCents == 50)
+        && exists(/databases/$(database)/documents/users/$(request.resource.data.referrerId));
+
+      // Only admin / trusted server functions can update or delete referrals
+      allow update, delete: if isAdmin();
+    }
+
+    // Watch Sessions and Cooldowns (used for views and fraud prevention)
+    match /video_watch_sessions/{sessionId} {
+      allow create: if isAuthenticated() && request.resource.data.viewerUid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // View Reward Cooldowns (Strictly server-authoritative)
+    match /reward_view_cooldowns/{cooldownId} {
+      // Ordinary clients CANNOT read, create, modify, or delete cooldown records.
+      // Firebase Cloud Functions (Admin SDK) bypass rules and maintain server authority.
+      allow read, write: if isAdmin();
+    }
+
+    // Stories Collection (Authoritative 24-hour Stories stored in Firestore)
+    match /stories/{storyId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && (!('ownerId' in request.resource.data) || request.resource.data.ownerId == request.auth.uid)
+        && (!('authorId' in request.resource.data) || request.resource.data.authorId == request.auth.uid)
+        && (!('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid)
+        && request.resource.data.mediaUrl is string
+        && request.resource.data.mediaUrl.size() > 0
+        && request.resource.data.mediaUrl.size() <= 2000;
+
+      allow update: if isAdmin() || (
+        isAuthenticated()
+        && resource != null
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+      );
+
+      allow delete: if (isAuthenticated() && resource != null && resource.data.userId == request.auth.uid) || isAdmin();
+    }
+
+    // App Configuration & Mandatory Version Control
+    // Public read ensures clients can check version before and after authentication.
+    // Write is strictly restricted to verified app administrators.
+    match /app_config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
+

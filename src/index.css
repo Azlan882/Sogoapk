@@ -1,0 +1,764 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #0B0F1A;
+    color: #e2e8f0;
+  }
+}
+
+/* Custom sleek dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ==========================================================================
+   Lively Light Theme (Scoped strictly to html[data-theme="lively-light"])
+   Sleek Dark remains 100% untouched when html[data-theme="sleek-dark"].
+   ========================================================================== */
+
+html[data-theme="lively-light"] {
+  color-scheme: light;
+}
+
+html[data-theme="lively-light"] body,
+html[data-theme="lively-light"] .bg-\[\#0B0F1A\] {
+  background-color: #F4F6FB;
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+html[data-theme="lively-light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Primary Cards, Modals, Auth Containers & Drawers */
+html[data-theme="lively-light"] .bg-slate-900,
+html[data-theme="lively-light"] .bg-slate-900\/95,
+html[data-theme="lively-light"] .bg-slate-900\/90,
+html[data-theme="lively-light"] .bg-slate-900\/80,
+html[data-theme="lively-light"] .bg-\[\#0F172A\],
+html[data-theme="lively-light"] .bg-\[\#131B2E\],
+html[data-theme="lively-light"] .bg-\[\#131B2E\]\/90 {
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 12px -2px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+}
+
+/* Sticky Header & Bottom Navigation */
+html[data-theme="lively-light"] .bg-\[\#0F172A\]\/90,
+html[data-theme="lively-light"] .bg-\[\#0F172A\]\/95 {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 10px rgba(15, 23, 42, 0.05);
+}
+
+/* Secondary Surfaces, Pill Containers & Recessed Panels */
+html[data-theme="lively-light"] .bg-slate-800,
+html[data-theme="lively-light"] .bg-slate-800\/90,
+html[data-theme="lively-light"] .bg-slate-800\/80,
+html[data-theme="lively-light"] .bg-slate-800\/60,
+html[data-theme="lively-light"] .bg-slate-900\/65,
+html[data-theme="lively-light"] .bg-slate-900\/60,
+html[data-theme="lively-light"] .bg-slate-950,
+html[data-theme="lively-light"] .bg-slate-950\/80,
+html[data-theme="lively-light"] .bg-slate-950\/70,
+html[data-theme="lively-light"] .bg-slate-950\/60,
+html[data-theme="lively-light"] .bg-slate-950\/50,
+html[data-theme="lively-light"] .bg-slate-950\/40,
+html[data-theme="lively-light"] .bg-\[\#0B0F1A\]\/80 {
+  background-color: #F1F5F9;
+}
+
+/* Active Selected Theme Option in Settings */
+html[data-theme="lively-light"] [role="group"][aria-label="Theme Mode"] button[aria-pressed="true"] {
+  background-color: #FFFFFF;
+  color: #4F46E5;
+  border-color: #C7D2FE;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.14);
+}
+
+/* Interactive Surface Hover & Focus States */
+html[data-theme="lively-light"] .hover\:bg-slate-900:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-800:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-800\/80:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-800\/60:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-750:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-700:hover,
+html[data-theme="lively-light"] .hover\:bg-slate-700\/80:hover {
+  background-color: #E2E8F0;
+}
+
+html[data-theme="lively-light"] input.focus\:bg-slate-900:focus,
+html[data-theme="lively-light"] input.focus\:bg-slate-800:focus,
+html[data-theme="lively-light"] textarea:focus {
+  background-color: #FFFFFF;
+}
+
+/* Keep Media / Video Player Viewports Dark */
+html[data-theme="lively-light"] .aspect-9\/16.bg-slate-950,
+html[data-theme="lively-light"] .aspect-9\/16.bg-slate-900,
+html[data-theme="lively-light"] .aspect-16\/9.bg-slate-950 {
+  background-color: #0F172A;
+}
+
+/* Image Loading Skeleton Shimmer in Light Mode */
+html[data-theme="lively-light"] .from-slate-800\/75.via-slate-900\/90.to-slate-800\/75 {
+  background-image: linear-gradient(to bottom right, #F1F5F9, #E2E8F0, #F1F5F9);
+}
+
+html[data-theme="lively-light"] .from-slate-800.to-slate-900 {
+  background-image: linear-gradient(to bottom right, #F1F5F9, #E2E8F0);
+}
+
+/* Subtle Borders & Dividers */
+html[data-theme="lively-light"] .border-slate-800,
+html[data-theme="lively-light"] .border-slate-800\/90,
+html[data-theme="lively-light"] .border-slate-800\/80,
+html[data-theme="lively-light"] .border-slate-800\/60,
+html[data-theme="lively-light"] .border-slate-750,
+html[data-theme="lively-light"] .border-slate-700,
+html[data-theme="lively-light"] .border-slate-700\/80,
+html[data-theme="lively-light"] .border-slate-700\/60,
+html[data-theme="lively-light"] .border-slate-700\/50 {
+  border-color: #E2E8F0;
+}
+
+html[data-theme="lively-light"] .hover\:border-slate-700:hover {
+  border-color: #CBD5E1;
+}
+
+html[data-theme="lively-light"] .divide-slate-800\/80 > :not(:last-child) {
+  border-color: #E2E8F0;
+}
+
+html[data-theme="lively-light"] .ring-\[\#0F172A\],
+html[data-theme="lively-light"] .ring-slate-900,
+html[data-theme="lively-light"] .ring-\[\#131B2E\] {
+  --tw-ring-color: #FFFFFF;
+}
+
+html[data-theme="lively-light"] .ring-slate-700 {
+  --tw-ring-color: #CBD5E1;
+}
+
+/* Primary & Secondary Charcoal Typography */
+html[data-theme="lively-light"] .text-white,
+html[data-theme="lively-light"] .text-slate-100 {
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] .text-slate-200 {
+  color: #1E293B;
+}
+
+html[data-theme="lively-light"] .text-slate-300 {
+  color: #334155;
+}
+
+html[data-theme="lively-light"] .text-slate-400,
+html[data-theme="lively-light"] .text-slate-400\/80,
+html[data-theme="lively-light"] .text-slate-400\/70 {
+  color: #475569;
+}
+
+html[data-theme="lively-light"] .text-slate-500,
+html[data-theme="lively-light"] .text-slate-600 {
+  color: #64748B;
+}
+
+html[data-theme="lively-light"] .hover\:text-white:hover,
+html[data-theme="lively-light"] .hover\:text-slate-200:hover,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-slate-200,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-slate-300 {
+  color: #0F172A;
+}
+
+/* ==========================================================================
+   COMPREHENSIVE ICON VISIBILITY & CONTRAST SYSTEM FOR LIVELY LIGHT
+   Ensures all action, navigation, header, menu, view, and status icons
+   are crisp, unmistakable, and never faint or overshadowed on light surfaces.
+   ========================================================================== */
+
+/* 1. Default Lucide SVG Icon Crispness on Light Surfaces */
+html[data-theme="lively-light"] svg.lucide.text-slate-300,
+html[data-theme="lively-light"] svg.lucide.text-slate-400,
+html[data-theme="lively-light"] svg.lucide.text-slate-400\/80,
+html[data-theme="lively-light"] svg.lucide.text-slate-500,
+html[data-theme="lively-light"] svg.lucide.text-slate-600,
+html[data-theme="lively-light"] button.text-slate-300 > svg.lucide,
+html[data-theme="lively-light"] button.text-slate-400 > svg.lucide,
+html[data-theme="lively-light"] button.text-slate-500 > svg.lucide {
+  color: #1E293B;
+}
+
+/* 2. Feed Post & Reel Action Bar Icons (Like, Comment, Share/Repost, Save/Bookmark, Download) */
+html[data-theme="lively-light"] [aria-label="Like"],
+html[data-theme="lively-light"] [aria-label="Unlike"],
+html[data-theme="lively-light"] [aria-label="Like Reel"],
+html[data-theme="lively-light"] [aria-label="Unlike Reel"],
+html[data-theme="lively-light"] [aria-label="Comments"],
+html[data-theme="lively-light"] [aria-label="Reel comments"],
+html[data-theme="lively-light"] [aria-label="Share post"],
+html[data-theme="lively-light"] [aria-label="Share Reel"],
+html[data-theme="lively-light"] [aria-label="Bookmark post"],
+html[data-theme="lively-light"] [aria-label="Remove bookmark"],
+html[data-theme="lively-light"] [aria-label="Download Reel"] {
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [aria-label="Like"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Like Reel"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Comments"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Reel comments"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Share post"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Share Reel"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Bookmark post"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Download Reel"] > svg.lucide {
+  color: #0F172A;
+  stroke-width: 2.2px;
+}
+
+/* Action Bar Counts (Likes, Comments, Reposts) */
+html[data-theme="lively-light"] [aria-label="Like"] > span.text-slate-300,
+html[data-theme="lively-light"] [aria-label="Like Reel"] > span.text-slate-300,
+html[data-theme="lively-light"] [aria-label="Comments"] > span.text-slate-300,
+html[data-theme="lively-light"] [aria-label="Reel comments"] > span.text-slate-300,
+html[data-theme="lively-light"] [aria-label="Share post"] > span.text-slate-300,
+html[data-theme="lively-light"] [aria-label="Share Reel"] > span.text-slate-300 {
+  color: #1E293B;
+  font-weight: 700;
+}
+
+/* Active & Hover States for Like (Heart) */
+html[data-theme="lively-light"] .text-rose-500,
+html[data-theme="lively-light"] [aria-label="Unlike"] > svg.lucide,
+html[data-theme="lively-light"] [aria-label="Unlike Reel"] > svg.lucide,
+html[data-theme="lively-light"] .hover\:text-rose-400:hover,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-rose-400 {
+  color: #E11D48;
+}
+
+html[data-theme="lively-light"] .fill-rose-500 {
+  fill: #E11D48;
+}
+
+/* Active & Hover States for Share / Repost (Repeat2) */
+html[data-theme="lively-light"] [aria-label="Share post"] > svg.text-emerald-400,
+html[data-theme="lively-light"] [aria-label="Share Reel"] > svg.text-emerald-400,
+html[data-theme="lively-light"] .hover\:text-emerald-400:hover,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-emerald-400 {
+  color: #059669;
+}
+
+/* Active & Hover States for Save / Bookmark (Bookmark) */
+html[data-theme="lively-light"] [aria-label="Remove bookmark"] > svg.lucide,
+html[data-theme="lively-light"] svg.lucide-bookmark.fill-amber-400 {
+  color: #D97706;
+  fill: #F59E0B;
+  stroke-width: 2.2px;
+}
+
+html[data-theme="lively-light"] .hover\:text-amber-400:hover,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-amber-400 {
+  color: #D97706;
+}
+
+/* 3. View / Eye Metric Indicator in Feed Cards */
+html[data-theme="lively-light"] div[title$="views"] {
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-radius: 9999px;
+}
+
+html[data-theme="lively-light"] div[title$="views"] > svg.lucide-eye {
+  color: #334155;
+  stroke-width: 2.2px;
+}
+
+html[data-theme="lively-light"] div[title$="views"] > span {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* 4. More / Three-Dots Post Options Button */
+html[data-theme="lively-light"] [aria-label="Post options menu"] {
+  color: #1E293B;
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+}
+
+html[data-theme="lively-light"] [aria-label="Post options menu"]:hover {
+  color: #0F172A;
+  background-color: #E2E8F0;
+  border-color: #CBD5E1;
+}
+
+html[data-theme="lively-light"] [aria-label="Post options menu"] > svg.lucide {
+  color: #1E293B;
+  stroke-width: 2.5px;
+}
+
+/* 5. Top Header & Bottom Navigation Bar Icons */
+html[data-theme="lively-light"] header button.text-slate-400 {
+  color: #1E293B;
+}
+
+html[data-theme="lively-light"] header button.text-slate-400 > svg.lucide {
+  color: #1E293B;
+  stroke-width: 2.2px;
+}
+
+html[data-theme="lively-light"] header button.text-slate-400:hover,
+html[data-theme="lively-light"] header button.text-slate-400:hover > svg.lucide {
+  color: #4F46E5;
+  background-color: #EEF2FF;
+}
+
+html[data-theme="lively-light"] nav button svg.lucide.text-slate-400 {
+  color: #334155;
+  stroke-width: 2.2px;
+}
+
+html[data-theme="lively-light"] nav button span.text-slate-400 {
+  color: #334155;
+  font-weight: 600;
+}
+
+html[data-theme="lively-light"] nav button:hover svg.lucide.text-slate-400,
+html[data-theme="lively-light"] nav button:hover span.text-slate-400 {
+  color: #4F46E5;
+}
+
+html[data-theme="lively-light"] nav button svg.lucide.text-cyan-400 {
+  color: #4F46E5;
+  stroke-width: 2.6px;
+}
+
+html[data-theme="lively-light"] nav button .opacity-70 {
+  opacity: 0.92;
+}
+
+/* 6. Home Stories "Your Story" Add Button & Profile Settings Button */
+html[data-theme="lively-light"] section button.border-dashed.border-slate-700 {
+  background-color: #EEF2FF;
+  border-color: #818CF8;
+  color: #4F46E5;
+}
+
+html[data-theme="lively-light"] section button.border-dashed.border-slate-700 > svg.lucide {
+  color: #4F46E5;
+  stroke-width: 2.4px;
+}
+
+html[data-theme="lively-light"] [aria-label="Settings"] {
+  color: #1E293B;
+  background-color: #F1F5F9;
+  border: 1px solid #E2E8F0;
+}
+
+html[data-theme="lively-light"] [aria-label="Settings"] > svg.lucide {
+  color: #1E293B;
+  stroke-width: 2.2px;
+}
+
+/* 7. Vibrant Blue/Purple Sogo Accent Identity */
+html[data-theme="lively-light"] .text-cyan-400,
+html[data-theme="lively-light"] .text-cyan-300,
+html[data-theme="lively-light"] .text-cyan-400\/90 {
+  color: #4F46E5;
+}
+
+html[data-theme="lively-light"] .hover\:text-cyan-400:hover,
+html[data-theme="lively-light"] .hover\:text-cyan-300:hover,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-cyan-400 {
+  color: #4338CA;
+}
+
+html[data-theme="lively-light"] .bg-cyan-400 {
+  background-color: #4F46E5;
+  color: #FFFFFF;
+}
+
+html[data-theme="lively-light"] .border-cyan-400,
+html[data-theme="lively-light"] .border-cyan-500,
+html[data-theme="lively-light"] .hover\:border-cyan-500:hover,
+html[data-theme="lively-light"] .hover\:border-cyan-400:hover,
+html[data-theme="lively-light"] .focus\:border-cyan-500:focus,
+html[data-theme="lively-light"] .focus\:border-cyan-400:focus {
+  border-color: #4F46E5;
+}
+
+html[data-theme="lively-light"] .ring-cyan-400,
+html[data-theme="lively-light"] .hover\:ring-cyan-400:hover,
+html[data-theme="lively-light"] .focus\:ring-cyan-500:focus {
+  --tw-ring-color: #4F46E5;
+}
+
+html[data-theme="lively-light"] .accent-cyan-400 {
+  accent-color: #4F46E5;
+}
+
+/* 8. Vibrant Primary Buttons, Gradient CTAs & Their Child Icons */
+html[data-theme="lively-light"] .bg-cyan-500,
+html[data-theme="lively-light"] .bg-cyan-500\/90,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-600,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-500,
+html[data-theme="lively-light"] .from-cyan-400.to-blue-600 {
+  background-image: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
+  background-color: #4F46E5;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.26);
+}
+
+html[data-theme="lively-light"] .bg-cyan-500:hover,
+html[data-theme="lively-light"] .bg-cyan-500\/90:hover,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-600:hover,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-500:hover,
+html[data-theme="lively-light"] .from-cyan-400.to-blue-600:hover {
+  background-image: linear-gradient(135deg, #1D4ED8 0%, #4338CA 55%, #6D28D9 100%);
+  color: #FFFFFF;
+}
+
+html[data-theme="lively-light"] .bg-cyan-500 > svg.lucide,
+html[data-theme="lively-light"] .bg-cyan-500\/90 > svg.lucide,
+html[data-theme="lively-light"] .bg-cyan-400 > svg.lucide,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-600 > svg.lucide,
+html[data-theme="lively-light"] .from-cyan-500.to-blue-500 > svg.lucide,
+html[data-theme="lively-light"] .from-cyan-400.to-blue-600 > svg.lucide {
+  color: #FFFFFF;
+}
+
+/* 9. Soft Accent Surfaces, Action Menu Badges & Notification Icons */
+html[data-theme="lively-light"] .bg-cyan-500\/10,
+html[data-theme="lively-light"] .bg-cyan-500\/15,
+html[data-theme="lively-light"] .bg-cyan-500\/20,
+html[data-theme="lively-light"] .bg-cyan-950\/60,
+html[data-theme="lively-light"] .bg-cyan-950\/50,
+html[data-theme="lively-light"] .bg-cyan-950\/25 {
+  background-color: #EEF2FF;
+  border-color: #C7D2FE;
+  color: #4F46E5;
+}
+
+html[data-theme="lively-light"] .hover\:bg-cyan-500\/20:hover,
+html[data-theme="lively-light"] .hover\:bg-cyan-500\/10:hover {
+  background-color: #E0E7FF;
+}
+
+html[data-theme="lively-light"] .bg-purple-500\/10,
+html[data-theme="lively-light"] .bg-purple-500\/15,
+html[data-theme="lively-light"] .bg-purple-500\/20 {
+  background-color: #F3E8FF;
+  color: #7C3AED;
+}
+
+html[data-theme="lively-light"] .text-purple-400,
+html[data-theme="lively-light"] svg.lucide.text-purple-400 {
+  color: #7C3AED;
+}
+
+html[data-theme="lively-light"] .text-blue-400,
+html[data-theme="lively-light"] svg.lucide.text-blue-400 {
+  color: #2563EB;
+}
+
+html[data-theme="lively-light"] .text-teal-400,
+html[data-theme="lively-light"] svg.lucide.text-teal-400 {
+  color: #0D9488;
+}
+
+/* Sogo Brand Wordmark Gradient on Light Header */
+html[data-theme="lively-light"] .from-pink-400.via-purple-400.to-cyan-400 {
+  background-image: linear-gradient(90deg, #DB2777 0%, #7C3AED 50%, #2563EB 100%);
+}
+
+/* Creator Rewards, Admin & Status Banners in Light Mode */
+html[data-theme="lively-light"] .from-\[\#172340\].via-\[\#101A2E\].to-\[\#151D30\],
+html[data-theme="lively-light"] .from-\[\#131E3A\].via-\[\#101A2E\].to-\[\#0A1124\],
+html[data-theme="lively-light"] .from-amber-950\/30 {
+  background-image: linear-gradient(to right, #FFFBEB, #FEF3C7, #FFFFFF);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+html[data-theme="lively-light"] .from-purple-950\/40 {
+  background-image: linear-gradient(to right, #FAF5FF, #F3E8FF, #FFFFFF);
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+html[data-theme="lively-light"] .from-rose-950\/40 {
+  background-image: linear-gradient(to right, #FFF1F2, #FFE4E6, #FFFFFF);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+html[data-theme="lively-light"] .bg-amber-950\/30,
+html[data-theme="lively-light"] .bg-amber-500\/20,
+html[data-theme="lively-light"] .bg-amber-500\/15,
+html[data-theme="lively-light"] .bg-amber-500\/10 {
+  background-color: #FEF3C7;
+}
+
+html[data-theme="lively-light"] .text-amber-300,
+html[data-theme="lively-light"] .text-amber-400,
+html[data-theme="lively-light"] .text-amber-500,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-amber-300 {
+  color: #B45309;
+}
+
+html[data-theme="lively-light"] svg.lucide-star.fill-amber-400 {
+  color: #D97706;
+  fill: #F59E0B;
+}
+
+html[data-theme="lively-light"] .bg-rose-950\/40,
+html[data-theme="lively-light"] .bg-rose-950\/50,
+html[data-theme="lively-light"] .bg-rose-500\/10,
+html[data-theme="lively-light"] .bg-rose-500\/15,
+html[data-theme="lively-light"] .bg-rose-500\/20,
+html[data-theme="lively-light"] .hover\:bg-rose-950\/30:hover,
+html[data-theme="lively-light"] .hover\:bg-rose-500\/10:hover {
+  background-color: #FFF1F2;
+}
+
+html[data-theme="lively-light"] .text-rose-300,
+html[data-theme="lively-light"] .text-rose-400,
+html[data-theme="lively-light"] .group:hover .group-hover\:text-rose-300 {
+  color: #E11D48;
+}
+
+html[data-theme="lively-light"] .bg-emerald-950\/20,
+html[data-theme="lively-light"] .bg-emerald-950\/40,
+html[data-theme="lively-light"] .bg-emerald-950\/50,
+html[data-theme="lively-light"] .bg-emerald-500\/10,
+html[data-theme="lively-light"] .bg-emerald-500\/20 {
+  background-color: #ECFDF5;
+}
+
+html[data-theme="lively-light"] .text-emerald-300,
+html[data-theme="lively-light"] .text-emerald-400 {
+  color: #059669;
+}
+
+/* 10. Preserve Crisp White Text & High-Visibility Icons on Dark Media Overlays, Reels Player, Lightbox & Colored Buttons */
+html[data-theme="lively-light"] .drop-shadow-md,
+html[data-theme="lively-light"] .drop-shadow-xl,
+html[data-theme="lively-light"] .drop-shadow-2xl,
+html[data-theme="lively-light"] [class*="from-black/"],
+html[data-theme="lively-light"] [class*="from-black/"] .text-white,
+html[data-theme="lively-light"] [class*="from-black/"] .text-slate-200,
+html[data-theme="lively-light"] [class*="from-black/"] .text-slate-300,
+html[data-theme="lively-light"] .bg-black .text-slate-100,
+html[data-theme="lively-light"] [class*="bg-[#0B0F1A]/70"],
+html[data-theme="lively-light"] [class*="bg-[#0B0F1A]/70"] .text-white,
+html[data-theme="lively-light"] [aria-label="Full screen image viewer"] .text-white,
+html[data-theme="lively-light"] [aria-label="Full screen image viewer"] .text-slate-200,
+html[data-theme="lively-light"] .bg-rose-600,
+html[data-theme="lively-light"] .bg-emerald-600,
+html[data-theme="lively-light"] .bg-rose-500\/90,
+html[data-theme="lively-light"] .from-cyan-600.to-blue-800 {
+  color: #FFFFFF;
+}
+
+/* Re-establish dark typography inside modal dialog cards rendered inside dark backdrops in Lively Light */
+html[data-theme="lively-light"] [role="dialog"],
+html[data-theme="lively-light"] [role="dialog"] .bg-slate-900,
+html[data-theme="lively-light"] [class*="bg-black/"] [role="dialog"],
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white {
+  background-color: #FFFFFF;
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] h3,
+html[data-theme="lively-light"] [role="dialog"] h4,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 h3,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 h4,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white h3,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white h4 {
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .text-slate-100,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 .text-slate-100,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white .text-slate-100 {
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .text-slate-200,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 .text-slate-200,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white .text-slate-200 {
+  color: #1E293B;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .text-slate-300:not(.bg-rose-600 *):not(.bg-rose-500 *),
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 .text-slate-300:not(.bg-rose-600 *):not(.bg-rose-500 *),
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white .text-slate-300:not(.bg-rose-600 *):not(.bg-rose-500 *) {
+  color: #334155;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .text-slate-400,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-slate-900 .text-slate-400,
+html[data-theme="lively-light"] [class*="bg-black/"] .bg-white .text-slate-400 {
+  color: #64748B;
+}
+
+html[data-theme="lively-light"] [role="dialog"] label {
+  color: #1E293B;
+}
+
+/* Report & Block Dialog Option Cards, Textarea & Form Elements in Lively Light */
+html[data-theme="lively-light"] [role="dialog"] .report-reason-unselected,
+html[data-theme="lively-light"] .report-reason-unselected {
+  background-color: #F1F5F9;
+  border-color: #E2E8F0;
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .report-reason-unselected:hover,
+html[data-theme="lively-light"] .report-reason-unselected:hover {
+  background-color: #E2E8F0;
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .report-reason-selected,
+html[data-theme="lively-light"] .report-reason-selected {
+  background-color: #FFF1F2;
+  border-color: #F43F5E;
+  color: #BE123C;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .report-radio-unselected,
+html[data-theme="lively-light"] .report-radio-unselected {
+  border-color: #94A3B8;
+  background-color: #FFFFFF;
+}
+
+html[data-theme="lively-light"] [role="dialog"] textarea,
+html[data-theme="lively-light"] [role="dialog"] input {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+html[data-theme="lively-light"] [role="dialog"] textarea::placeholder,
+html[data-theme="lively-light"] [role="dialog"] input::placeholder {
+  color: #64748B;
+}
+
+html[data-theme="lively-light"] [role="dialog"] .bg-rose-600,
+html[data-theme="lively-light"] [role="dialog"] .bg-rose-600 * {
+  color: #FFFFFF !important;
+}
+
+html[data-theme="lively-light"] [role="dialog"] button.bg-slate-800 {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+  color: #1E293B;
+}
+
+html[data-theme="lively-light"] [role="dialog"] button.bg-slate-800:hover {
+  background-color: #E2E8F0;
+  color: #0F172A;
+}
+
+/* Keep Accent Icons Inside Dark Video/Media Overlays Bright & Readable */
+html[data-theme="lively-light"] [class*="bg-black/"] .text-cyan-400,
+html[data-theme="lively-light"] [class*="from-black/"] .text-cyan-400,
+html[data-theme="lively-light"] .bg-black .text-cyan-400,
+html[data-theme="lively-light"] [class*="bg-[#0B0F1A]/70"] .text-cyan-400 {
+  color: #38BDF8;
+}
+
+html[data-theme="lively-light"] [class*="bg-black/"] svg.lucide-bookmark.fill-amber-400 {
+  color: #FBBF24;
+  fill: #FBBF24;
+}
+
+html[data-theme="lively-light"] [class*="bg-[#0B0F1A]/70"] .fill-cyan-400 {
+  fill: #38BDF8;
+}
+
+/* ==========================================================================
+   Reels Screen Right-Side Action Bar (Consistent across Dark & Light themes)
+   ========================================================================== */
+.reel-action-bar .reel-action-btn > div {
+  background-color: rgba(0, 0, 0, 0.40) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn,
+.reel-action-bar .reel-action-btn {
+  color: #FFFFFF !important;
+}
+
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn svg.lucide,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn svg.lucide,
+.reel-action-bar .reel-action-btn svg.lucide {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* Explicit exception: Liked heart must show rose-500 fill & stroke */
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn svg.lucide.text-rose-500,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn svg.lucide.text-rose-500,
+.reel-action-bar .reel-action-btn svg.lucide.text-rose-500 {
+  color: #F43F5E !important;
+  stroke: #F43F5E !important;
+  fill: #F43F5E !important;
+}
+
+/* Explicit exception: Active bookmark must show amber-400 */
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn svg.lucide.text-amber-400,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn svg.lucide.text-amber-400,
+.reel-action-bar .reel-action-btn svg.lucide.text-amber-400 {
+  color: #FBBF24 !important;
+  stroke: #FBBF24 !important;
+  fill: #FBBF24 !important;
+}
+
+/* Explicit exception: Unmuted sound must show cyan-400 */
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn svg.lucide.text-cyan-400,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn svg.lucide.text-cyan-400,
+.reel-action-bar .reel-action-btn svg.lucide.text-cyan-400,
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn .text-cyan-400 svg.lucide,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn .text-cyan-400 svg.lucide,
+.reel-action-bar .reel-action-btn .text-cyan-400 svg.lucide {
+  color: #22D3EE !important;
+  stroke: #22D3EE !important;
+}
+
+/* Explicit exception: Download state icons (spinner, check, error) */
+.reel-action-bar .reel-action-btn svg.lucide.text-emerald-400 {
+  color: #34D399 !important;
+  stroke: #34D399 !important;
+}
+.reel-action-bar .reel-action-btn svg.lucide.text-rose-400 {
+  color: #FB7185 !important;
+  stroke: #FB7185 !important;
+}
+
+/* Action bar count labels: crisp white with high-contrast drop-shadow */
+html[data-theme="lively-light"] .reel-action-bar .reel-action-btn span,
+html[data-theme="sleek-dark"] .reel-action-bar .reel-action-btn span,
+.reel-action-bar .reel-action-btn span {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+

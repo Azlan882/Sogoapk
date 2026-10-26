@@ -1,0 +1,439 @@
+================================================================================
+SOGOSOCIAL BACKUP ZIP INSPECTION, RESTORATION & GOOGLE SIGN-IN DIAGNOSTIC REPORT
+================================================================================
+
+PART 1: UPLOADED BACKUP ZIP INSPECTION (SogoSocial-main.zip)
+--------------------------------------------------------------------------------
+Commit in ZIP: b99ff61233518ca4f9cfd610229e7f19532fa677
+
+1. Does the ZIP Contain the Complete Core SogoSocial Project?
+--------------------------------------------------------------------------------
+YES — for the core application (at commit b99ff61233518ca4f9cfd610229e7f19532fa677).
+The ZIP archive contains the full SogoSocial-main/ directory tree (137 files),
+including:
+
+- src/:
+  All 52 source files and assets:
+  * src/App.tsx, src/main.tsx, src/index.css, src/vite-env.d.ts
+  * src/lib/firebase.ts, src/lib/utils.ts
+  * src/hooks/useAuth.tsx
+  * src/layouts/AppShell.tsx
+  * src/types/index.ts, src/types/admin.ts
+  * src/utils/formatRelativeTime.ts, src/utils/perfLogger.ts
+  * src/assets/ (sogo-logo.png, sogo-mark.svg, sogo_logo_trimmed.png,
+    images/sogo_logo_1789205511505.jpg)
+  * All 23 components in src/components/ (Avatar.tsx, BottomNavigation.tsx,
+    Button.tsx, CommentItem.tsx, EmptyState.tsx, FeedImage.tsx, Header.tsx,
+    HomeFeedReelCard.tsx, Icon.tsx, ImageGrid.tsx, ImageViewer.tsx,
+    LoadingState.tsx, PostActions.tsx, PostCard.tsx, ProfileHeader.tsx,
+    RequireAuth.tsx, SearchBar.tsx, ShareModal.tsx, StoryItem.tsx,
+    UserCard.tsx, VerifiedBadge.tsx, VideoCommentsDrawer.tsx, VideoItem.tsx)
+  * All 11 admin components in src/components/admin/ (AdminAnalyticsTab.tsx,
+    AdminHeader.tsx, AdminOverviewTab.tsx, AdminPayoutsTab.tsx,
+    AdminPostsTab.tsx, AdminReferralsTab.tsx, AdminReportsTab.tsx,
+    AdminRewardsTab.tsx, AdminSystemTab.tsx, AdminTestingToolsModal.tsx,
+    AdminUsersTab.tsx, AdminVideosTab.tsx)
+  * All 15 pages in src/pages/ (Bookmarks.tsx, CreatePost.tsx,
+    CreatorRewards.tsx, Discover.tsx, Home.tsx, Login.tsx, Notifications.tsx,
+    Onboarding.tsx, PostDetail.tsx, Profile.tsx, Settings.tsx,
+    SettingsPrivacy.tsx, Splash.tsx, Videos.tsx, admin/AdminDashboard.tsx)
+  * All 13 services in src/services/ (adminService.ts, authService.ts,
+    backButtonService.ts, notificationsService.ts, postsService.ts,
+    reelDownloadService.ts, rewardsService.ts, shareService.ts,
+    sogoStarsService.ts, storageService.ts, storiesService.ts,
+    usersService.ts, videosService.ts)
+
+- android/:
+  Complete Capacitor Android project:
+  * android/build.gradle, android/variables.gradle, android/settings.gradle,
+    android/capacitor.settings.gradle, android/gradle.properties,
+    android/gradlew, android/gradlew.bat, android/local.properties,
+    android/.gitignore
+  * android/gradle/wrapper/gradle-wrapper.jar,
+    android/gradle/wrapper/gradle-wrapper.properties
+  * android/app/build.gradle, android/app/capacitor.build.gradle,
+    android/app/proguard-rules.pro, android/app/.gitignore
+  * android/app/src/main/AndroidManifest.xml,
+    android/app/src/main/java/com/sogo/social/MainActivity.java,
+    android/app/src/main/java/com/sogo/social/MediaSaverPlugin.java,
+    and all android/app/src/main/res/* drawables, mipmaps, values, and xml
+  * android/capacitor-cordova-android-plugins/*
+
+- functions/:
+  * functions/index.js, functions/package.json, functions/package-lock.json,
+    functions/set_admin_claim.cjs
+
+- Root Configs & Workflows:
+  * .env.example, .firebaserc, firebase.json, firebase-applet-config.json,
+    firestore.rules, package.json, package-lock.json, bun.lock,
+    capacitor.config.json, codemagic.yaml, GITHUB_APK_GUIDE.md, index.html,
+    metadata.json, tsconfig.json, vite.config.ts,
+    .github/workflows/build-apk.yml, public/.well-known/assetlinks.json
+
+
+2. Does the ZIP Contain the Latest Google Sign-In Diagnostic Changes?
+--------------------------------------------------------------------------------
+NO — the ZIP was exported at commit b99ff61233518ca4f9cfd610229e7f19532fa677,
+which predates the recent Google Sign-In diagnostic turns:
+
+1) scripts/patch-social-login.cjs:
+   - In ZIP: MISSING (scripts/ in ZIP only has diagnose_videos.ts and
+     set_admin_claim.mjs).
+   - In Current Session: AVAILABLE (full 3-patch script preserved in session
+     context and included in Part 4 below).
+
+2) package.json postinstall script ("postinstall": "node scripts/patch-social-login.cjs"):
+   - In ZIP: MISSING (pre-patch package.json).
+   - In Current Session: AVAILABLE.
+
+3) Patched GoogleProvider.java (activity context + [16] runtime SHA-1/exception
+   diagnostics + getAuthorizationResult() early return):
+   - In ZIP: Not in ZIP (node_modules/ is excluded from git archives).
+   - On Disk Right Now: STILL INTACT ON DISK at
+     node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java
+     (66,567 bytes) and automatically applied by scripts/patch-social-login.cjs.
+
+4) Persistent Google login diagnostic in src/services/authService.ts:
+   - In ZIP: Older version (pre-version 6 diagnostic stage tracking).
+   - In Current Session: AVAILABLE.
+
+5) Diagnostic UI panel in src/pages/Login.tsx:
+   - In ZIP: Older version (pre-Google Login Diagnostic copyable panel).
+   - In Current Session: AVAILABLE.
+
+6) versionCode 6 in android/app/build.gradle:
+   - In ZIP: Older version.
+   - In Current Session: AVAILABLE.
+
+7) android/app/google-services.json:
+   - In ZIP: MISSING from ZIP.
+   - In Current Session: AVAILABLE.
+
+
+3. Summary of Important Files Present vs. Missing in the Uploaded ZIP
+--------------------------------------------------------------------------------
+PRESENT IN ZIP:
+- src/ (all 52 files, including Firebase src/lib/firebase.ts and Cloudinary
+  src/services/storageService.ts)
+- android/ (all Gradle scripts, wrapper, manifest, Java plugins, resources)
+- package.json & package-lock.json
+- .github/workflows/build-apk.yml
+- scripts/diagnose_videos.ts & scripts/set_admin_claim.mjs
+- .env.example, .firebaserc, firebase.json, firebase-applet-config.json,
+  firestore.rules, functions/*
+
+MISSING OR OLDER IN ZIP (but preserved in current session context / disk):
+- scripts/patch-social-login.cjs (missing in ZIP)
+- android/app/google-services.json (missing in ZIP)
+- package.json postinstall hook (older in ZIP)
+- android/app/build.gradle versionCode 6 (older in ZIP)
+- src/pages/Login.tsx & src/services/authService.ts persistent diagnostic panel
+  (older in ZIP)
+- src/lib/firebase.ts setLogLevel('silent') update (older in ZIP)
+
+
+4. How to Restore Cleanly & Safely
+--------------------------------------------------------------------------------
+- Why chat attachment alone cannot extract binary files directly:
+  When a .zip file is attached to the AI Studio chat prompt, the chat interface
+  converts the .zip into a text preview in the message rather than placing the
+  raw .zip file onto the container filesystem (/app/applet/).
+
+- Option A (Fastest in GitHub / Local Git):
+  Because a single commit ("Delete configuration, CI/CD workflows, build
+  scripts, and ignore files to clear the repository.") deleted the files on
+  GitHub, git history still has the exact parent commit right before that
+  deletion. Running:
+    git revert HEAD
+  (or `git reset --hard HEAD~1` locally) restores 100% of the repository files
+  from the previous commit immediately.
+
+- Option B (In AI Studio Workspace):
+  Upload SogoSocial-main.zip into the AI Studio File Explorer sidebar (so the
+  raw .zip file exists on disk at /SogoSocial-main.zip). Once confirmed, I can
+  extract all files from SogoSocial-main.zip into the workspace root and
+  re-apply the exact latest versions of:
+  1. scripts/patch-social-login.cjs (with all 3 patches)
+  2. package.json (with "postinstall": "node scripts/patch-social-login.cjs")
+  3. android/app/build.gradle (versionCode 6, versionName "1.0")
+  4. android/app/google-services.json
+  5. src/pages/Login.tsx
+  6. src/services/authService.ts
+  7. src/lib/firebase.ts
+
+
+================================================================================
+PART 2: DEPENDENCY & CREDENTIAL MANAGER [16] INVESTIGATION FINDINGS
+================================================================================
+
+1. Exact Version of @capgo/capacitor-social-login:
+   - 8.5.7 (declared in package.json line 20, installed in
+     node_modules/@capgo/capacitor-social-login/package.json line 3 and
+     SocialLoginPlugin.java line 27).
+
+2. Exact Version of androidx.credentials:credentials:
+   - 1.5.0 (declared in
+     node_modules/@capgo/capacitor-social-login/android/build.gradle line 75;
+     strictly pinned via credentials-play-services-auth:1.5.0.pom).
+
+3. Exact Version of androidx.credentials:credentials-play-services-auth:
+   - 1.5.0 (declared in
+     node_modules/@capgo/capacitor-social-login/android/build.gradle line 101).
+
+4. Exact Version of com.google.android.gms:play-services-auth:
+   - 21.4.0 (declared in
+     node_modules/@capgo/capacitor-social-login/android/build.gradle line 100;
+     overrides transitive 21.1.1 from credentials-play-services-auth:1.5.0.pom).
+
+5. Other Resolved Auth Dependencies in the Google Login Path:
+   - com.google.android.libraries.identity.googleid:googleid -> 1.1.1
+   - com.google.android.gms:play-services-identity-credentials -> 16.0.0-alpha02
+   - com.google.android.gms:play-services-auth-blockstore -> 16.4.0
+   - com.google.android.gms:play-services-fido -> 21.0.0
+   - com.google.android.gms:play-services-auth-api-phone -> 18.0.2
+   - com.google.android.gms:play-services-auth-base -> 18.0.10
+   - com.google.android.gms:play-services-base -> 18.5.0
+   - com.google.android.gms:play-services-basement -> 18.5.0
+   - com.google.android.gms:play-services-tasks -> 18.2.0
+   - androidx.concurrent:concurrent-futures -> 1.3.0
+   - com.squareup.okhttp3:okhttp -> 4.12.0
+   - com.auth0.android:jwtdecode -> 2.0.2
+
+6. Build-Time Dependency Resolution Tree:
+   project :app
+   └── project :capgo-capacitor-social-login
+       ├── androidx.credentials:credentials:1.5.0
+       │   ├── androidx.annotation:annotation:1.8.1
+       │   ├── androidx.biometric:biometric:1.1.0
+       │   ├── androidx.core:core:1.15.0 -> 1.17.0
+       │   ├── org.jetbrains.kotlin:kotlin-stdlib:1.8.22 -> 1.9.24
+       │   └── org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3
+       ├── androidx.credentials:credentials-play-services-auth:1.5.0
+       │   ├── androidx.credentials:credentials:[1.5.0] -> 1.5.0
+       │   ├── com.google.android.gms:play-services-identity-credentials:16.0.0-alpha02
+       │   ├── com.google.android.gms:play-services-auth-blockstore:16.4.0
+       │   ├── com.google.android.gms:play-services-auth:21.1.1 -> 21.4.0 (*)
+       │   ├── com.google.android.libraries.identity.googleid:googleid:1.1.0 -> 1.1.1 (*)
+       │   ├── com.google.android.gms:play-services-fido:21.0.0
+       │   └── org.jetbrains.kotlin:kotlin-stdlib:1.9.24
+       ├── com.google.android.gms:play-services-auth:21.4.0
+       │   ├── androidx.fragment:fragment:1.5.7 -> 1.8.9
+       │   ├── androidx.loader:loader:1.1.0
+       │   ├── com.google.android.gms:play-services-auth-api-phone:18.0.2
+       │   ├── com.google.android.gms:play-services-auth-base:18.0.10
+       │   ├── com.google.android.gms:play-services-base:18.5.0
+       │   ├── com.google.android.gms:play-services-basement:18.5.0
+       │   ├── com.google.android.gms:play-services-fido:20.0.1 -> 21.0.0 (*)
+       │   └── com.google.android.gms:play-services-tasks:18.2.0
+       ├── com.google.android.libraries.identity.googleid:googleid:1.1.1
+       │   ├── androidx.credentials:credentials:1.3.0-beta01 -> 1.5.0 (*)
+       │   ├── org.jetbrains.kotlin:kotlin-stdlib:1.8.0 -> 1.9.24 (*)
+       │   └── org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0
+       └── androidx.concurrent:concurrent-futures:1.3.0
+
+7. Origin of "Account reauth failed" and Exception Conversion:
+   - The string "Account reauth failed" originates in the device's Google Play
+     Services (com.google.android.gms / GmsCore) process as the statusMessage of
+     a com.google.android.gms.common.api.Status with statusCode = 16
+     (CommonStatusCodes.CANCELED = 16).
+   - On Android 14+ (API 34+), CredentialProviderFactory.kt (lines 92-104)
+     routes requests through CredentialProviderFrameworkImpl.kt (lines 131-173),
+     which receives android.credentials.GetCredentialException from GmsCore and
+     converts it via ConversionUtils.kt (lines 78-106) into a Jetpack
+     GetCredentialException preserving error.message ("[16] Account reauth failed.").
+   - On Pre-Android 14 (CredentialProviderPlayServicesImpl.kt lines 125-127 ->
+     CredentialProviderGetSignInIntentController.kt lines 224-236),
+     Identity.getSignInClient(context).getSignInCredentialFromIntent(data)
+     (zbat.class in play-services-auth:21.4.0) throws ApiException(status) with
+     statusCode == CommonStatusCodes.CANCELED (16), which is converted into
+     GetCredentialCancellationException("16: Account reauth failed.").
+   - GoogleProvider.java (line 931) checks isAccountReauthFailed(errorMessage)
+     (message.contains("Account reauth failed")) before checking
+     e instanceof GetCredentialCancellationException (line 935), retries once via
+     handleAccountReauthFailed() (lines 853-887), and rejects on the second
+     failure.
+
+8. Is [16] an Actual Google Status Code 16 or Plugin-Generated?
+   - BOTH:
+     1) 16 is the real Google Play Services status code
+        CommonStatusCodes.CANCELED = 16 returned by GmsCore with statusMessage
+        "Account reauth failed.".
+     2) In GoogleProvider.java (lines 858-863), handleAccountReauthFailed() also
+        hardcoded the literal string:
+        "Google Sign-In failed: [16] Account reauth failed. The plugin cleared
+         Credential Manager credential-selection state and retried once..."
+        without interpolating e.getMessage(), e.getType(), or runtime
+        signingSha1 into call.reject(...).
+
+9. Compatibility Issues in @capgo/capacitor-social-login 8.5.7:
+   - Issue 1: GoogleProvider.java line 542 passed `context` instead of `activity`
+     to `credentialManager.getCredentialAsync(context, ...)` (fixed in our
+     updated patch).
+   - Issue 2: GoogleProvider.java lines 858-863 omitted runtime `signingSha1`,
+     `clientId`, `e.getClass()`, `e.getType()`, and `e.getMessage()` from the
+     rejected error string (fixed in our updated patch).
+   - Issue 3: In `GetGoogleIdOption.Builder` (`googleid:1.1.1`),
+     `filterByAuthorizedAccounts` defaults to `true` (`iconst_1` in bytecode),
+     and `GoogleProvider.java` lines 514-516 only call
+     `setFilterByAuthorizedAccounts(true)` when true, never calling `false`.
+   - Issue 4: Unconditional `getAuthorizationResult()` call after ID token
+     extraction (fixed by our early-return patch in `handleSignInResult`).
+
+
+================================================================================
+PART 3: COMPLETE CONTENTS OF scripts/patch-social-login.cjs (ALL 3 PATCHES)
+================================================================================
+
+const fs = require('fs');
+const path = require('path');
+
+const targetFile = path.resolve(
+  __dirname,
+  '../node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java'
+);
+
+if (!fs.existsSync(targetFile)) {
+  console.error(`[patch-social-login] ERROR: Target file not found: ${targetFile}`);
+  process.exit(1);
+}
+
+const rawContent = fs.readFileSync(targetFile, 'utf8');
+const lineEnding = rawContent.includes('\r\n') ? '\r\n' : '\n';
+const content = rawContent.replace(/\r\n/g, '\n');
+
+const patches = [
+  {
+    name: 'login-activity-context',
+    unpatched: [
+      '        GetCredentialRequest filteredRequest = requestBuilder.build();',
+      '',
+      '        // Execute credential request',
+      '        Executor executor = Executors.newSingleThreadExecutor();',
+      '        credentialManager.getCredentialAsync(',
+      '            context,',
+      '            filteredRequest,',
+    ].join('\n'),
+    patched: [
+      '        GetCredentialRequest filteredRequest = requestBuilder.build();',
+      '',
+      '        // Execute credential request',
+      '        Executor executor = Executors.newSingleThreadExecutor();',
+      '        credentialManager.getCredentialAsync(',
+      '            activity,',
+      '            filteredRequest,',
+    ].join('\n'),
+  },
+  {
+    name: 'auth-only-early-return',
+    unpatched: [
+      '                    GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.getData());',
+      '                    String idToken = googleIdTokenCredential.getIdToken();',
+      '',
+      '                    ListenableFuture<AuthorizationResult> future = getAuthorizationResult(forceRefreshToken);',
+    ].join('\n'),
+    patched: [
+      '                    GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.getData());',
+      '                    String idToken = googleIdTokenCredential.getIdToken();',
+      '',
+      '                    if (this.mode == GoogleProviderLoginType.ONLINE && isAuthenticationOnlyScopes(this.scopes)) {',
+      '                        resolveOnlineLogin(call, response, resultObj, user, idToken, null);',
+      '                        return;',
+      '                    }',
+      '',
+      '                    ListenableFuture<AuthorizationResult> future = getAuthorizationResult(forceRefreshToken);',
+    ].join('\n'),
+  },
+  {
+    name: 'reauth-diagnostic-rejection',
+    unpatched: [
+      '        if (isReauthRetry(call)) {',
+      '            logAccountReauthFailedHelp(errorMessage);',
+      '            call.reject(',
+      '                "Google Sign-In failed: [16] Account reauth failed. The plugin cleared Credential Manager credential-selection state and retried once. " +',
+      '                    "If this affects only some users, check OAuth consent screen (External vs Internal, test users in Testing mode), " +',
+      '                    "Family Link accounts (ensure filterByAuthorizedAccounts is not set to true), and whether the user disabled Sign in with Google for your app. " +',
+      '                    "See Logcat tag GoogleProvider for package, signingSha1, and webClientId."',
+      '            );',
+      '            return;',
+      '        }',
+    ].join('\n'),
+    patched: [
+      '        if (isReauthRetry(call)) {',
+      '            logAccountReauthFailedHelp(errorMessage);',
+      '            String runtimeSha1 = getSigningCertificateSha1(context);',
+      '            String pkgName = context != null ? context.getPackageName() : "unknown";',
+      '            String exClass = e != null ? e.getClass().getName() : "unknown";',
+      '            String exType = e != null && e.getType() != null ? e.getType() : "unknown";',
+      '            String exMsg = e != null && e.getMessage() != null ? e.getMessage() : "null";',
+      '            String configuredClientId = this.clientId != null ? this.clientId : "null";',
+      '            String androidVer = Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")";',
+      '            call.reject(',
+      '                "Google Sign-In failed: [16] Account reauth failed. The plugin cleared Credential Manager credential-selection state and retried once. " +',
+      '                    "Diag[package=" + pkgName +',
+      '                    ", signingSha1=" + (runtimeSha1 != null ? runtimeSha1 : "unknown") +',
+      '                    ", clientId=" + configuredClientId +',
+      '                    ", exceptionClass=" + exClass +',
+      '                    ", exceptionType=" + exType +',
+      '                    ", exceptionMessage=" + exMsg +',
+      '                    ", android=" + androidVer + "]"',
+      '            );',
+      '            return;',
+      '        }',
+    ].join('\n'),
+  },
+];
+
+function countOccurrences(haystack, needle) {
+  let count = 0;
+  let pos = 0;
+  while ((pos = haystack.indexOf(needle, pos)) !== -1) {
+    count++;
+    pos += needle.length;
+  }
+  return count;
+}
+
+let updatedContent = content;
+let appliedAny = false;
+
+for (const patch of patches) {
+  const patchedCount = countOccurrences(updatedContent, patch.patched);
+  if (patchedCount === 1) {
+    continue;
+  }
+  if (patchedCount > 1) {
+    console.error(`[patch-social-login] ERROR: Patch "${patch.name}" appears multiple times in GoogleProvider.java.`);
+    process.exit(1);
+  }
+
+  const unpatchedCount = countOccurrences(updatedContent, patch.unpatched);
+  if (unpatchedCount !== 1) {
+    console.error(
+      `[patch-social-login] ERROR: Expected original code pattern for "${patch.name}" in GoogleProvider.java exactly once, but found ${unpatchedCount} occurrence(s).`
+    );
+    process.exit(1);
+  }
+
+  updatedContent = updatedContent.replace(patch.unpatched, patch.patched);
+  appliedAny = true;
+}
+
+for (const patch of patches) {
+  if (countOccurrences(updatedContent, patch.patched) !== 1) {
+    console.error(`[patch-social-login] ERROR: Failed post-patch verification for "${patch.name}" in GoogleProvider.java.`);
+    process.exit(1);
+  }
+}
+
+if (!appliedAny) {
+  console.log('[patch-social-login] All patches already present in GoogleProvider.java. Nothing to do.');
+  process.exit(0);
+}
+
+fs.writeFileSync(
+  targetFile,
+  lineEnding === '\r\n' ? updatedContent.replace(/\n/g, '\r\n') : updatedContent,
+  'utf8'
+);
+
+console.log('[patch-social-login] Successfully patched GoogleProvider.java (activity context, auth-only early return, and reauth diagnostics).');

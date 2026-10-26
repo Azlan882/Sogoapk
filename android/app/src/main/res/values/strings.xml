@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SogoSocial</string>
+    <string name="title_activity_main">SogoSocial</string>
+    <string name="package_name">com.sogo.social</string>
+    <string name="custom_url_scheme">com.sogo.social</string>
+    <string name="server_client_id">1035132864845-ulhcdqfeknujp5mc1naj6vhrujqc828t.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">1035132864845-ulhcdqfeknujp5mc1naj6vhrujqc828t.apps.googleusercontent.com</string>
+    <string name="admob_app_id">ca-app-pub-4186027945506385~8912050174</string>
+</resources>

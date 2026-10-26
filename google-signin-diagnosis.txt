@@ -1,0 +1,211 @@
+================================================================================
+SOGOSOCIAL ANDROID GOOGLE SIGN-IN DIAGNOSIS REPORT
+================================================================================
+
+SUMMARY REPORT
+--------------
+- Installed plugin version:
+  @capgo/capacitor-social-login@8.5.7
+  (Latest npm version is 8.5.11; GoogleProvider.java in 8.5.11 is byte-for-byte
+  identical to 8.5.7).
+
+- Exact relevant method names in GoogleProvider.java:
+  * login(PluginCall call, JSONObject config) (lines 433-559)
+  * handleSignInResult(GetCredentialResponse result, PluginCall call) (lines 693-771)
+  * getAuthorizationResult(Boolean forceRefreshToken) (lines 589-691)
+  * isAuthenticationOnlyScopes(String[] scopes) (lines 226-245)
+  * resolveOnlineLogin(...) (lines 247-274)
+  * handleAuthorizationIntent(int requestCode, Intent data) (lines 773-798)
+
+- Exact reason the second prompt happens:
+  After Credential Manager (GetSignInWithGoogleOption) succeeds and returns a
+  valid idToken, handleSignInResult() (line 714) unconditionally calls
+  getAuthorizationResult(forceRefreshToken), which invokes
+  Identity.getAuthorizationClient(context).authorize(authorizationRequest)
+  for userinfo.email, userinfo.profile, and openid scopes.
+  When authorizationResult.hasResolution() is true (line 626), it launches a
+  second Google prompt via:
+  activity.startIntentSenderForResult(pendingIntent.getIntentSender(), REQUEST_AUTHORIZE_GOOGLE_MIN + fututeIndex, ...) (lines 653-661).
+  Furthermore, when that second prompt finishes, MainActivity does not forward
+  request code 583892990 (REQUEST_AUTHORIZE_GOOGLE_MIN) to
+  handleAuthorizationIntent(), so future.get() (line 724) hangs indefinitely
+  without ever resolving SocialLogin.login().
+
+- Whether Firebase needs the access token:
+  NO. GoogleAuthProvider.credential(idToken) and signInWithCredential(auth, credential)
+  in src/services/authService.ts (lines 758-759) use ONLY idToken. The OAuth
+  accessToken is completely unused.
+
+- Safest fix:
+  In GoogleProvider.java inside handleSignInResult() (around line 714), when
+  mode == GoogleProviderLoginType.ONLINE && isAuthenticationOnlyScopes(this.scopes)
+  is true, immediately call:
+  resolveOnlineLogin(call, response, resultObj, user, idToken, null);
+  and return -- completely bypassing getAuthorizationResult() /
+  AuthorizationClient.authorize().
+
+- Whether a package upgrade can fix it:
+  NO. Comparing @capgo/capacitor-social-login@8.5.7 against the latest published
+  version 8.5.11 confirms that GoogleProvider.java is 100% identical in 8.5.11.
+
+- Whether any Firebase/Google Cloud changes are still necessary:
+  NO. Since the first Credential Manager picker succeeds and returns a valid
+  idToken, your package name (com.sogo.social), Play App Signing SHA-1, and
+  webClientId are already accepted by Google Credential Manager.
+
+
+================================================================================
+DETAILED ANSWERS TO QUESTIONS 1-8
+================================================================================
+
+1. After Credential Manager successfully returns idToken, is
+   getAuthorizationResult() / AuthorizationClient.authorize() actually required
+   for Firebase authentication?
+--------------------------------------------------------------------------------
+No.
+- In src/services/authService.ts (lines 747-759), SogoSocial only reads idToken:
+    const idToken = (res?.result as any)?.idToken || (res as any)?.idToken;
+    const credential = GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+- Firebase Auth verifies the OIDC idToken JWT directly. It does not need a
+  Google OAuth2 API accessToken.
+- Even GoogleProvider.java's own comment on lines 223-225 states:
+  "Authentication-only (OIDC) scopes that Credential Manager already covers via
+   the ID token. AuthorizationClient is only needed when requesting additional
+   Google API scopes."
+
+
+2. Does the plugin have an existing configuration/option that allows an
+   authentication-only Google flow where the ID token is returned without
+   invoking AuthorizationClient.authorize()?
+--------------------------------------------------------------------------------
+No.
+- Inspecting GoogleProvider.java (lines 466-486 and 711-760):
+  1. login() always adds:
+     - "https://www.googleapis.com/auth/userinfo.email"
+     - "https://www.googleapis.com/auth/userinfo.profile"
+     - "openid"
+     to this.scopes (lines 471-473), even if scopes is omitted in JS.
+  2. In handleSignInResult() (lines 711-714), right after extracting idToken,
+     the code unconditionally calls:
+     ListenableFuture<AuthorizationResult> future = getAuthorizationResult(forceRefreshToken);
+  3. Although the plugin author wrote isAuthenticationOnlyScopes(String[] scopes)
+     (lines 226-245), they ONLY called it inside the catch (Exception e) block
+     (line 744) if future.get() throws an exception -- they NEVER gated the call
+     to getAuthorizationResult(forceRefreshToken) on
+     !isAuthenticationOnlyScopes(this.scopes).
+  4. When AuthorizationClient.authorize() requires user interaction
+     (authorizationResult.hasResolution() == true at line 626), it enters
+     addOnSuccessListener (not addOnFailureListener), launches the second prompt
+     via activity.startIntentSenderForResult(...), and never reaches the catch
+     fallback.
+
+
+3. Is mode: 'offline' appropriate for SogoSocial, or would that remove the ID
+   token/profile data we need?
+--------------------------------------------------------------------------------
+No -- mode: 'offline' will break SogoSocial login for three reasons:
+1. No idToken is returned: In GoogleProvider.java (lines 728-733), when
+   mode == OFFLINE, handleSignInResult() only puts "responseType": "offline" and
+   "serverAuthCode" into resultObj -- it omits idToken and profile, causing
+   authService.ts (line 751) to throw:
+   "Unable to retrieve Google ID token from device credential manager".
+2. Requires ModifiedMainActivityForSocialLoginPlugin: Line 439 rejects
+   immediately with "You CANNOT use offline mode without modifying the main
+   activity" unless MainActivity implements
+   ModifiedMainActivityForSocialLoginPlugin.
+3. Still calls getAuthorizationResult() and breaks logout(): Offline mode still
+   calls getAuthorizationResult() (line 714) and causes SocialLogin.logout()
+   (line 1183) to reject with "logout is not implemented when using offline mode".
+
+
+4. Does the current mode: 'online' specifically cause the second authorization
+   request on Android?
+--------------------------------------------------------------------------------
+Yes, indirectly, because both ONLINE and OFFLINE modes run through
+handleSignInResult() line 714:
+- In mode: 'online', after Credential Manager returns the idToken,
+  handleSignInResult() calls getAuthorizationResult(forceRefreshToken) to fetch
+  an accessToken via Identity.getAuthorizationClient(context).authorize(authorizationRequest).
+- Whenever authorizationResult.hasResolution() is true (line 626),
+  getAuthorizationResult() fires
+  activity.startIntentSenderForResult(pendingIntent.getIntentSender(), ...)
+  (line 653), which displays the second Google prompt.
+- Then, when the user completes that second prompt, Android delivers the result
+  (requestCode = 583892990) to MainActivity.onActivityResult(). Because neither
+  MainActivity.java nor SocialLoginPlugin.handleOnActivityResult() (lines 483-527)
+  routes REQUEST_AUTHORIZE_GOOGLE_MIN to GoogleProvider.handleAuthorizationIntent(),
+  the Completer stored in futuresList (line 650) is NEVER completed, and
+  future.get() (line 724) hangs forever on the background executor thread.
+
+
+5. Smallest, Safest Change for
+   Credential Manager -> idToken -> Firebase signInWithCredential
+   Without the Second Prompt
+--------------------------------------------------------------------------------
+In node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java,
+inside handleSignInResult(GetCredentialResponse result, PluginCall call) right
+after line 712 (String idToken = googleIdTokenCredential.getIdToken();):
+
+- Check if this.mode == GoogleProviderLoginType.ONLINE && isAuthenticationOnlyScopes(this.scopes).
+- When true (which is always the case for SogoSocial since no extra Google API
+  scopes are requested), immediately call:
+
+  if (this.mode == GoogleProviderLoginType.ONLINE && isAuthenticationOnlyScopes(this.scopes)) {
+      resolveOnlineLogin(call, response, resultObj, user, idToken, null);
+      return;
+  }
+
+- This uses the plugin's own existing isAuthenticationOnlyScopes() and
+  resolveOnlineLogin() methods, returns:
+  { provider: "google", result: { idToken, profile, accessToken: null, responseType: "online" } }
+  immediately after the first Credential Manager picker succeeds, and never
+  invokes getAuthorizationResult() or AuthorizationClient.authorize().
+
+
+6. Upstream Check (8.5.7 vs Latest 8.5.11)
+--------------------------------------------------------------------------------
+- Installed version: 8.5.7
+- Latest published npm version: 8.5.11
+- Diff check result: Inspecting the 8.5.11 package tarball from npm shows that
+  android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java in
+  8.5.11 is 100% identical to 8.5.7. Upgrading @capgo/capacitor-social-login
+  will NOT fix this issue.
+
+
+7. How to Make the node_modules Patch Persistent Across npm install and
+   GitHub Actions
+--------------------------------------------------------------------------------
+To make the 4-line change in GoogleProvider.java persist across npm install and
+CI builds (build-apk.yml / codemagic.yaml):
+- Add a postinstall script in package.json (e.g.,
+  "postinstall": "node scripts/patch-social-login.cjs" or patch-package) that
+  patches
+  node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java
+  automatically at the end of every npm install / npm ci.
+- Because Capacitor compiles the plugin's Java source directly from
+  node_modules/@capgo/capacitor-social-login/android during
+  ./android/gradlew bundleRelease, a postinstall script requires NO changes to
+  .github/workflows/build-apk.yml, Firebase, or authService.ts.
+
+
+8. Distinguishing Between (A) vs. (B)
+--------------------------------------------------------------------------------
+It is definitively (A), plus a missing onActivityResult bridge for
+AuthorizationClient:
+- Why it is NOT (B) (OAuth/SHA-1 mismatch):
+  If the package name, SHA-1, or webClientId were rejected by Google, the FIRST
+  Credential Manager picker (GetSignInWithGoogleOption) would fail immediately
+  in onError(GetCredentialException e) with "Developer console is not set up
+  correctly" (28444) or "[16] Account reauth failed", and would NEVER reach
+  onResult(GetCredentialResponse result) / handleSignInResult().
+  Because the first picker succeeds and hands a valid GoogleIdTokenCredential to
+  handleSignInResult(), Google Play Services has already verified your Play App
+  Signing SHA-1 and issued the idToken.
+- Why it IS (A):
+  handleSignInResult() then unnecessarily calls getAuthorizationResult()
+  (Identity.getAuthorizationClient(context).authorize()), which sees
+  authorizationResult.hasResolution() == true and launches the second OAuth
+  consent/resolution PendingIntent (startIntentSenderForResult on line 653),
+  whose result is never routed back to GoogleProvider.handleAuthorizationIntent(),
+  causing the flow to hang/fail after the second prompt.

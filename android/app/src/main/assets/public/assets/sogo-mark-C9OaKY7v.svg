@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Cyan Bubble Gradient -->
+    <linearGradient id="cyanGrad" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#00C4FF"/>
+      <stop offset="100%" stop-color="#0092F3"/>
+    </linearGradient>
+
+    <!-- Magenta Pink Bubble Gradient -->
+    <linearGradient id="pinkGrad" x1="20%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#FF35A8"/>
+      <stop offset="100%" stop-color="#F7127E"/>
+    </linearGradient>
+
+    <!-- Purple Indigo Bubble Gradient -->
+    <linearGradient id="purpleGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#6436FF"/>
+      <stop offset="100%" stop-color="#4616E3"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#1A0A4A" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Group for entire logo centered -->
+  <g id="sogo-brand-mark" transform="translate(10, 8)">
+    <!-- 1. Cyan accent bubble (Left) -->
+    <path d="M 125 155
+             C 70 185, 38 245, 42 315
+             C 45 375, 78 425, 135 440
+             C 142 442, 144 460, 146 470
+             C 152 460, 165 435, 175 415
+             C 120 395, 88 340, 92 280
+             C 96 230, 115 185, 125 155 Z"
+          fill="url(#cyanGrad)"/>
+
+    <!-- 2. Magenta Pink Bubble (Top-Right / Back) -->
+    <path d="M 170 85
+             C 255 75, 360 95, 425 125
+             C 475 150, 480 215, 465 285
+             C 450 355, 425 410, 355 430
+             C 300 448, 230 435, 205 448
+             C 175 465, 155 475, 145 475
+             C 185 430, 260 425, 320 410
+             C 395 390, 425 320, 420 250
+             C 415 175, 360 128, 275 115
+             C 215 105, 165 115, 135 145
+             C 140 115, 155 88, 170 85 Z"
+          fill="url(#pinkGrad)"/>
+
+    <!-- 3. Main Electric Purple/Indigo Bubble (Front) -->
+    <path d="M 180 130
+             C 290 115, 365 155, 375 235
+             C 385 310, 345 380, 285 405
+             C 230 428, 195 425, 170 440
+             C 150 455, 140 480, 140 480
+             C 140 480, 138 450, 132 420
+             C 90 390, 80 310, 92 240
+             C 104 175, 135 135, 180 130 Z"
+          fill="url(#purpleGrad)"
+          filter="url(#softShadow)"/>
+
+    <!-- 4. Pure White "SOGO" Bubble Letters -->
+    <g fill="#FFFFFF">
+      <!-- S -->
+      <path d="M 115 245
+               C 135 240, 152 250, 150 272
+               C 148 288, 136 296, 118 302
+               C 98 309, 88 316, 85 330
+               C 81 352, 100 364, 124 360
+               C 140 357, 151 350, 160 342
+               L 152 325
+               C 144 332, 134 338, 122 340
+               C 108 342, 99 336, 101 326
+               C 103 315, 113 309, 132 302
+               C 152 295, 166 283, 168 263
+               C 170 238, 148 221, 118 225
+               C 100 228, 86 236, 78 245
+               L 88 262
+               C 96 253, 105 247, 115 245 Z"/>
+
+      <!-- O -->
+      <path d="M 205 230
+               C 232 227, 258 247, 260 283
+               C 262 319, 238 347, 210 350
+               C 182 353, 158 333, 156 297
+               C 154 261, 178 233, 205 230 Z
+               M 206 255
+               C 192 257, 180 272, 181 296
+               C 182 320, 195 328, 209 326
+               C 223 325, 233 311, 232 286
+               C 231 264, 220 254, 206 255 Z"/>
+
+      <!-- G -->
+      <path d="M 312 230
+               C 338 228, 358 243, 366 261
+               L 345 274
+               C 338 262, 327 254, 312 254
+               C 288 254, 270 272, 268 296
+               C 266 322, 284 340, 311 339
+               C 328 338, 342 329, 346 314
+               L 316 316
+               L 314 296
+               L 368 295
+               C 370 325, 348 358, 309 360
+               C 268 361, 244 331, 245 296
+               C 247 258, 272 231, 312 230 Z"/>
+
+      <!-- O -->
+      <path d="M 395 225
+               C 422 222, 448 242, 450 278
+               C 452 314, 428 342, 400 345
+               C 372 348, 348 328, 346 292
+               C 344 256, 368 228, 395 225 Z
+               M 396 250
+               C 382 252, 370 267, 371 291
+               C 372 315, 385 323, 399 321
+               C 413 320, 423 306, 422 281
+               C 421 259, 410 249, 396 250 Z"/>
+    </g>
+  </g>
+</svg>
